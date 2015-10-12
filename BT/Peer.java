@@ -1,3 +1,9 @@
+/* Timothy Choi
+ * Prasant Sinha
+ * Michael Shafran
+ * 
+ * */
+
 package BT;
 
 public class Peer {
