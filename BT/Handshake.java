@@ -16,12 +16,12 @@ public class Handshake {
 		this.s = s;
 	}
 	
-	public byte[] buildHandshake(byte[] info_hash){
+	public byte[] buildHandshake(byte[] info_hash, String peer){
 		 //handshake
 		ByteBuffer handshake =ByteBuffer.allocate(68);
         byte[] protocol_name = "BitTorrent protocol".getBytes();
         byte[] reserved = new byte[8];
-        byte[] peer_id = "MS123456789098765432".getBytes();
+        byte[] peer_id = peer.substring(0, 20).getBytes();
         byte len = 19;
         
         handshake.put(len);

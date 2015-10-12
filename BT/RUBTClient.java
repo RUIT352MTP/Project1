@@ -87,7 +87,7 @@ public class RUBTClient {
 		
         
         Handshake hs = new Handshake(s);
-        byte[] hand = hs.buildHandshake(torrentInfo.info_hash.array());
+        byte[] hand = hs.buildHandshake(torrentInfo.info_hash.array(), parser.peer_id);
         System.out.println("Built HS");
         hs.sendHandshake(hand, 0, 68);
         System.out.println("sent");
