@@ -98,10 +98,9 @@ public class RUBTClient {
         hs.sendHandshake(hand, 0, 68);
         System.out.println("sent");
         byte[] handout = hs.readHandshake();
-        System.out.println(handout);
         for(int x= 0 ; x < handout.length; x++) {
             // printing the characters
-            System.out.print((char)handout[x]  + "   "); 
+            System.out.print((char)handout[x]); 
          }
         System.out.println("Received");
         s.close();
@@ -112,5 +111,8 @@ public class RUBTClient {
 		
 			e.printStackTrace();
 		}
+		
+		//listen for incoming connections
+		
     }
 }

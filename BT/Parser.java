@@ -23,7 +23,7 @@ public class Parser {
 
    
     public final String uniqueID = UUID.randomUUID().toString();
-    public final String peer_id = Typechange.bytesToURL(uniqueID.getBytes());
+    public final String peer_id = Typechange.bytesToURL(uniqueID.substring(0, 20).getBytes());
     private int downloaded = 0;
     private int uploaded = 0;
     private int left;
