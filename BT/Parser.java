@@ -10,6 +10,18 @@ import GivenTools.*;
 import java.io.*;
 import java.nio.*;
 import java.util.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Parser {
 
@@ -21,7 +33,9 @@ public class Parser {
     private static final ByteBuffer KEY_MIN_INTERVAL = ByteBuffer.wrap(new byte[] {'m','i','n',' ','i','n','t','e','r','v','a','l'});
     private static final ByteBuffer KEY_FAILURE_REASON = ByteBuffer.wrap(new byte[] {'f','a','i','l','u','r','e',' ','r','e','a','s','o','n'});
 
-   
+	private static final String PEER_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; 
+	private SecureRandom random = new SecureRandom();
+
     public final String uniqueID = UUID.randomUUID().toString();
     public final String peer_id = Typechange.bytesToURL(uniqueID.substring(0, 20).getBytes());
     private int downloaded = 0;
@@ -30,9 +44,11 @@ public class Parser {
     private String info_hash;
     private String ip_addr;
     private final int port = 6881;
-
+    TorrentInfo ti;
+    
     private int interval = 0;
     private int min_interval = 0;
+	public final String my_peer_id = getPeerID();
 
     public Parser(TorrentInfo ti){
         ip_addr = ti.announce_url.toString();
@@ -46,6 +62,33 @@ public class Parser {
                 + downloaded + "&left=" + left;
     }
 
+	public byte[] sendGet() throws MalformedURLException, IOException {
+		URL url = new URL(ip_addr + "?info_hash=" + info_hash + "&peer_id=" + my_peer_id 
+				+ "&port=" + port + "&uploaded=" + uploaded + "&downloaded="
+				+ downloaded + "&left=" + left);
+		HttpURLConnection http_conn = (HttpURLConnection) url.openConnection();
+		http_conn.setRequestMethod("GET");
+		
+		byte[] databyte = null;
+		try{
+			InputStreamReader in = new InputStreamReader(http_conn.getInputStream());
+			BufferedReader inB = new BufferedReader(in);
+			String dataline;
+			String data="";
+			while((dataline=inB.readLine())!=null){
+				data+=dataline;
+				System.out.println(data);
+			}
+			in.close();
+			databyte = data.getBytes();
+			return databyte;//we are able to see the interaction
+			
+		} catch(IOException ioe){
+			System.out.println(ioe.getMessage());
+			throw ioe;
+		}
+	}
+    
     public List<Peer> parseResponse(byte[] resp) throws BencodingException, UnsupportedEncodingException{
 
         List<Peer> peers_list = new ArrayList<Peer>();
@@ -111,7 +154,22 @@ public class Parser {
         return o.toString();
     }
 
+	
+	private String getPeerID(){
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < 20; i++) {//generates random string
+			int index = random.nextInt(PEER_STRING.length());
+			builder.append(PEER_STRING.charAt(index));
+			if(builder.toString().length()==2&&builder.toString().substring(0,1)=="RU"){//can not be RU or RUBT
+				getPeerID();
+			}
+		}
+		return builder.toString();
+	}
 
-
+	public void DownloadedParts(int num){
+		this.downloaded = num;
+		this.left = this.ti.file_length - num;
+	}
 
 }
