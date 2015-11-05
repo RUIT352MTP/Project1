@@ -37,13 +37,13 @@ public class Parser {
 	private SecureRandom random = new SecureRandom();
 
     public final String uniqueID = UUID.randomUUID().toString();
-    public final String peer_id = Typechange.bytesToURL(uniqueID.substring(0, 20).getBytes());
+    public final String peer_id = Typechange.bytesToURL(("MS"+uniqueID.substring(0, 18)).getBytes());
     private int downloaded = 0;
     private int uploaded = 0;
     private int left;
     private String info_hash;
     private String ip_addr;
-    private final int port = 6881;
+    public static final int port = 11598;
     TorrentInfo ti;
     
     private int interval = 0;

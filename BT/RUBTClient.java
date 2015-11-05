@@ -89,7 +89,7 @@ public class RUBTClient {
         //handshake
         Socket s = null;
 		try {
-			s = new Socket(selectedIP,selectedPort);
+			s = new Socket(selectedIP,25760);
 		
         
         Handshake hs = new Handshake(s);
@@ -102,6 +102,7 @@ public class RUBTClient {
             // printing the characters
             System.out.print((char)handout[x]); 
          }
+        System.out.println();
         System.out.println("Received");
         s.close();
 		} catch (UnknownHostException e) {
@@ -113,6 +114,22 @@ public class RUBTClient {
 		}
 		
 		//listen for incoming connections
-		
-    }
+		int listeningPort = Parser.port;
+		int maxConnections=5;
+		int i=0;
+		try{
+			ServerSocket listener= new ServerSocket(listeningPort);
+			Socket peerSocket;
+			while((i++ < maxConnections) ||(maxConnections == 0)){
+				peerSocket = listener.accept();
+				System.out.println("Connected to: " + peerSocket.getLocalSocketAddress());
+				communicator conn_c= new communicator(peerSocket);
+				Thread t = new Thread(conn_c);
+				t.start();
+			}
+		} catch (IOException ioe) {
+			System.out.println("IOException on socket listen: " + ioe);
+			ioe.printStackTrace();
+		}
+	}
 }
