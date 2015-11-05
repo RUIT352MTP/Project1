@@ -13,8 +13,10 @@ import java.net.*;
 import java.util.*;
 
 public class RUBTClient {
+	private static String output_file; 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException, IOException {
+		output_file = args[1];
 
         /* Check for valid arguments */
         if(args[0] == null)
@@ -89,7 +91,7 @@ public class RUBTClient {
         //handshake
         Socket s = null;
 		try {
-			s = new Socket(selectedIP,25760);
+			s = new Socket(selectedIP,selectedPort);
 		
         
         Handshake hs = new Handshake(s);
@@ -131,5 +133,28 @@ public class RUBTClient {
 			System.out.println("IOException on socket listen: " + ioe);
 			ioe.printStackTrace();
 		}
+	}
+    
+	public static void writeToFile(byte[] bytes){
+		
+		File file = new File(RUBTClient.output_file);//make file specified by user
+		
+		RandomAccessFile stream = null;
+		try {
+			stream = new RandomAccessFile(file,"rw");
+			stream.write(bytes, 0, bytes.length);//write bytes
+		
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+            try {
+                stream.close();//close connection
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
 	}
 }

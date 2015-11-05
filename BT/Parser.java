@@ -46,7 +46,7 @@ public class Parser {
     public static final int port = 11598;
     TorrentInfo ti;
     
-    private int interval = 0;
+    public static int interval = 0;
     private int min_interval = 0;
 	public final String my_peer_id = getPeerID();
 
@@ -54,6 +54,7 @@ public class Parser {
         ip_addr = ti.announce_url.toString();
         info_hash = Typechange.bytesToURL(ti.info_hash.array());
         left = ti.file_length;//TODO
+        this.ti = ti;
     }
 
     public String passUrl(){
@@ -89,7 +90,7 @@ public class Parser {
 		}
 	}
     
-    public List<Peer> parseResponse(byte[] resp) throws BencodingException, UnsupportedEncodingException{
+    public List<Peer> parseResponse(byte[] resp) throws BencodingException, UnknownHostException, IOException{
 
         List<Peer> peers_list = new ArrayList<Peer>();
 
@@ -117,7 +118,7 @@ public class Parser {
             int port = ((Integer) pair.get(KEY_PORT)).intValue();
             String ip = new String(((ByteBuffer)pair.get(KEY_IP)).array());
             byte[] peer_id = ((ByteBuffer) pair.get(KEY_PEER_ID)).array();
-            peers_list.add(new Peer(ip, port, peer_id));
+            peers_list.add(new Peer(ip, port, peer_id, this));
         }
         ToolKit.print(Bencoder2.decode(resp));
         return peers_list;
