@@ -50,8 +50,12 @@ public class Handshake {
 	    byte[] data = new byte[68];
 	 
 	        dis.readFully(data);
+<<<<<<< HEAD
 	    //in.close();
 	    //dis.close();
+=======
+	  
+>>>>>>> codefromprasant
 	    return data;
 	}
 	public void sendHandshake(byte[] myByteArray, int start, int len) throws IOException {
@@ -70,8 +74,12 @@ public class Handshake {
 	    if (len > 0) {
 	        dos.write(myByteArray, start, len);
 	    }
+<<<<<<< HEAD
 	    //out.close();
 	    //dos.close();
+=======
+	    
+>>>>>>> codefromprasant
 	}
 	 // optional
 }

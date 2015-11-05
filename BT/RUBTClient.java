@@ -15,8 +15,12 @@ import java.util.*;
 public class RUBTClient {
 	private static String output_file; 
 
+<<<<<<< HEAD
     public static void main(String[] args) throws UnknownHostException, IOException {
 		output_file = args[1];
+=======
+    public static void main(String[] args) throws BencodingException {
+>>>>>>> codefromprasant
 
         /* Check for valid arguments */
         if(args[0] == null)
@@ -100,11 +104,14 @@ public class RUBTClient {
         hs.sendHandshake(hand, 0, 68);
         System.out.println("sent");
         byte[] handout = hs.readHandshake();
+        
         for(int x= 0 ; x < handout.length; x++) {
             // printing the characters
             System.out.print((char)handout[x]); 
+            
          }
         System.out.println();
+        //System.out.println(Bencoder2.decode(handout));
         System.out.println("Received");
         s.close();
 		} catch (UnknownHostException e) {

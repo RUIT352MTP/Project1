@@ -158,10 +158,10 @@ public class Parser {
 	
 	private String getPeerID(){
 		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < 20; i++) {//generates random string
+		for (int i = 0; i < 20; i++) {
 			int index = random.nextInt(PEER_STRING.length());
 			builder.append(PEER_STRING.charAt(index));
-			if(builder.toString().length()==2&&builder.toString().substring(0,1)=="RU"){//can not be RU or RUBT
+			if(builder.toString().length()==2&&builder.toString().substring(0,1)=="RU"){
 				getPeerID();
 			}
 		}

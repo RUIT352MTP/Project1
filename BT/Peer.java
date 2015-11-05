@@ -39,19 +39,17 @@ public class Peer {
 		this.p = p;
 		this.info_hash = ti.info_hash.array();
 
-        
-		
-		// create a connection
+		//starts connection
 		this.socket = new Socket(this.ip, this.port);
 		this.socket.setSoTimeout(Parser.interval*1000);
 		this.in = new DataInputStream(this.socket.getInputStream());
 		this.out = new DataOutputStream(this.socket.getOutputStream());
 		
-		// validate the info hash and then start messaging 
+		//validates info hash to start messaging 
 		if(isValid(handshake())) 
 			RUBTClient.writeToFile(beginMessaging());
 		
-		// close everything
+		//closes connections
 		this.in.close();
 		this.out.close();
 		this.socket.close();
@@ -80,44 +78,41 @@ public class Peer {
 	}
 	private boolean isValid(byte[] handshake) {
 		
-		if(handshake == null || handshake.length != 68 || handshake[0] != 19)//handshake validation
+		if(handshake == null || handshake.length != 68 || handshake[0] != 19)
 			return false;
 		
-		
-		byte[] spliced_arr = new byte[19];
-		System.arraycopy(handshake, 1, spliced_arr, 0, 19);
-		if(!Arrays.equals(spliced_arr,Peer.BT_PROTOCOL))//handshake validation
+		byte[] splicedA = new byte[19];
+		System.arraycopy(handshake, 1, splicedA, 0, 19);
+		if(!Arrays.equals(splicedA,Peer.BT_PROTOCOL))//handshake validation
 			return false;
 		
-		spliced_arr = new byte[20];
-		System.arraycopy(handshake, 28, spliced_arr, 0, 20);
-		if(!Arrays.equals(spliced_arr,this.info_hash))
+		splicedA = new byte[20];
+		System.arraycopy(handshake, 28, splicedA, 0, 20);
+		if(!Arrays.equals(splicedA,this.info_hash))
 			return false;
 		
-		spliced_arr = new byte[20];
-		System.arraycopy(handshake, 28, spliced_arr, 0, 20);
-		return !Arrays.equals(spliced_arr,this.peer_id);
+		splicedA = new byte[20];
+		System.arraycopy(handshake, 28, splicedA, 0, 20);
+		return !Arrays.equals(splicedA,this.peer_id);
 		
 	}
 	private byte[] beginMessaging() {
-		// Optional: send bitfield message, but I didn't
-		byte[] thefile = new byte[ti.file_length];
+		byte[] nFile = new byte[ti.file_length];
 		
 		try {
 			
 			int length = this.in.readInt();
 			this.in.readByte();
 			readMessage(length-1);
+			int rLen = 16384;
+			int limit = ti.piece_hashes.length * (ti.piece_length/rLen);
+			int bytesWritten = 0;
 			
 			writeMessage(new PeerMsg(0,PeerMsg.Interested));
 			
 			while(readMessage(5)[4] != 1){ // loop until peer unchokes
 				writeMessage(new PeerMsg(0,PeerMsg.Interested));
 			}
-			
-			int rLen = 16384;
-			int limit = ti.piece_hashes.length * (ti.piece_length/rLen);
-			int bytesWritten = 0;
 			
 			for(int counter = 0; counter < limit; counter++){
 				
@@ -131,8 +126,8 @@ public class Peer {
 				PeerMsg m = new PeerMsg(0,PeerMsg.Request);
 				m.Payload(rLen, start, counter/2);
 				writeMessage(m);
-				readMessage(13); // don't care about <length-prefix><7> and <index><begin>
-				System.arraycopy(readMessage(rLen), 0, thefile, bytesWritten, rLen);
+				readMessage(13); 
+				System.arraycopy(readMessage(rLen), 0, nFile, bytesWritten, rLen);
 				this.p.DownloadedParts(bytesWritten);
 				this.p.sendGet();
 				bytesWritten += rLen;
@@ -143,7 +138,7 @@ public class Peer {
 			System.out.println(e.getMessage());
 		}
 		
-		return thefile;
+		return nFile;
 		
 	}
 	
@@ -154,10 +149,10 @@ public class Peer {
 	}
 	
 	private byte[] readMessage(int len) throws IOException{
-		byte[] bArr = new byte[len];
+		byte[] rFile = new byte[len];
 		for(int i=0; i < len; i++)//reads response from peer
-			bArr[i] = this.in.readByte();
-		return bArr;
+			rFile[i] = this.in.readByte();
+		return rFile;
 	}
 }
 

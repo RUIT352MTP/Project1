@@ -90,9 +90,7 @@ public class PeerMsg {
     }
 
     public byte[] getPayLoad(){
-    	
         byte[] ans = null;
-
         switch (msgId){
             case Have:
             case Piece:
