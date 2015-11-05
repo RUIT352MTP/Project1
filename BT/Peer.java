@@ -30,6 +30,7 @@ public class Peer {
         this.ip = ip;
         this.port = port;
         this.peer_id = peer_id;
+        
     }
 
 	private byte[] beginMessaging() {

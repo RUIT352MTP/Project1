@@ -14,7 +14,7 @@ import java.util.*;
 
 public class RUBTClient {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws BencodingException {
 
         /* Check for valid arguments */
         if(args[0] == null)
@@ -89,7 +89,7 @@ public class RUBTClient {
         //handshake
         Socket s = null;
 		try {
-			s = new Socket(selectedIP,25760);
+			s = new Socket(selectedIP,selectedPort);
 		
         
         Handshake hs = new Handshake(s);
@@ -98,11 +98,14 @@ public class RUBTClient {
         hs.sendHandshake(hand, 0, 68);
         System.out.println("sent");
         byte[] handout = hs.readHandshake();
+        
         for(int x= 0 ; x < handout.length; x++) {
             // printing the characters
             System.out.print((char)handout[x]); 
+            
          }
         System.out.println();
+        //System.out.println(Bencoder2.decode(handout));
         System.out.println("Received");
         s.close();
 		} catch (UnknownHostException e) {
