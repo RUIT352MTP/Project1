@@ -69,7 +69,7 @@ public class Handshake extends Thread{
 				Message msg = new Message();
 				byte[] handshake;
 				byte[] peerid;
-				peer.sendMessage(msg.handShake(cMain.torrentinfo.info_hash.array(), cMain.tracker.getUser_id()));
+				peer.send(msg.handshake_(cMain.torrentinfo.info_hash.array(), cMain.tracker.getUser_id()));
 				handshake = peer.handshake();
 				
 				if(handshake == null){
@@ -80,16 +80,16 @@ public class Handshake extends Thread{
 				
 				if(peerid == null){
 					System.out.println("peer ID not received");
-					peer.closeConnections();
+					peer.close();
 					continue;
 				}
 				
-				peer.setPeer_id(peerid);
+				peer.set_peer_id(peerid);
 				
 				System.out.println("peer id: " +  peerid);
 				
-				peer.setClient(cMain);
-				peer.setConnected(true);
+				peer.set_client(cMain);
+				peer.set_connected(true);
 				peer.start();
 				
 			}catch(EOFException e){
