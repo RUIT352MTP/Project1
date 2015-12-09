@@ -71,7 +71,7 @@ public class Communicator {
 		List<Peer> cPeer = new ArrayList<Peer>();
 		while(itr.hasNext()){
 			Peer tmp1 = itr.next();
-			if(((tmp1.getIp().equals("128.6.171.130")) || (tmp1.getIp().equals("128.6.171.131")))){
+			if(((tmp1.get_ip().equals("128.6.171.130")) || (tmp1.get_ip().equals("128.6.171.131")))){
 				cPeer.add(tmp1);
 			}
 		} return cPeer;
@@ -94,9 +94,9 @@ public class Communicator {
 		while(itr.hasNext()){
 			Peer tt = itr.next();
 			System.out.println("Peer "+ ++c + "/"+this.peers.size()+":");
-			System.out.println("IP: "+tt.getIp());
-			System.out.println("Peer ID: "+tt.getPeer_id());
-			System.out.println("Port: "+tt.getPort());
+			System.out.println("IP: "+tt.get_ip());
+			System.out.println("Peer ID: "+tt.get_peer_id());
+			System.out.println("Port: "+tt.get_port());
 		}
 	}
 }
