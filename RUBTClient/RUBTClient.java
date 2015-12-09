@@ -158,17 +158,17 @@ public class RUBTClient extends Thread{
 			Message message = new Message();
 			
 			boolean seeding = client.getSeeding();  
-			System.out.println(“Unchoking");
+			System.out.println("Unchoking");
 			System.out.println("seeding: " + seeding);
 			for (Peer peer: client.peers){
-				if (!peer.isChoking()){
+				if (!peer.is_choking()){
 					if (seeding){
-						bytes_per_second = peer.sent_bps;
+						bytes_per_second = peer.upload_bps;
 					}else {
-						bytes_per_second = peer.received_bps;
+						bytes_per_second = peer.download_bps;
 					}
 					
-					System.out.println(peer.getPeer_id() + " performance: " + bytes_per_second + "bps");
+					System.out.println(peer.get_peer_id() + " performance: " + bytes_per_second + "bps");
 					
 					if(bytes_per_second <  lowest_bps){
 						lowest_bps = bytes_per_second;
@@ -178,27 +178,27 @@ public class RUBTClient extends Thread{
 			}
 			
 			for (Peer peer: client.peers){
-				if (peer.isChoking()){
+				if (peer.is_choking()){
 					choked_peers.add(peer);
 				}
 			}
 			
 			if(client.unchokedPeers > 1){
-				dropped_peer.sendMessage(message.getChoke());
-				dropped_peer.setChoking(true);
+				dropped_peer.send(message.getChoke_());
+				dropped_peer.set_choking(true);
 				client.decrementUnchoked();
 			}
 			
-			System.out.println("Peer: " + dropped_peer.getPeer_id() + " has been choked");
+			System.out.println("Peer: " + dropped_peer.get_peer_id() + " has been choked");
 			
 			Random randomGenerator = new Random();
 			
 			if (choked_peers.size() > 0){ 
 				picked_up_peer = choked_peers.get(randomGenerator.nextInt(choked_peers.size()));
-				picked_up_peer.sendMessage(message.getUnchoke());
-				picked_up_peer.setChoking(false);
+				picked_up_peer.send(message.getUnchoke_());
+				picked_up_peer.set_choking(false);
 				client.incrementUnchoked();
-				System.out.println("Peer: " + picked_up_peer.getPeer_id() + " has been unchoked");
+				System.out.println("Peer: " + picked_up_peer.get_peer_id() + " has been unchoked");
 			}
 			System.out.println("downloaded "+ client.downloaded);
 			System.out.println("@@@@@@@@@@@@@  Optimizely Time done  @@@@@@@@@@@@");
@@ -222,7 +222,7 @@ public class RUBTClient extends Thread{
 		while(this.port == 0){
 		}
 		Communicator peer_list = contactTracker("started");
-		addPeers(peer_list.getValidPeers());
+		addPeers(peer_list.cPeer());
 		{	
 			int interval = peer_list.interval;
 			if(interval <= 0 || interval >= 180){
@@ -241,7 +241,7 @@ public class RUBTClient extends Thread{
 				
 				this.workers.execute(new Runnable() {
 					public void run(){
-						byte[] msg = task.getMessage();
+						byte[] msg = task.getMsg();
 						Peer peer = task.getPeer();
 						if (peer!= null && !peers.contains(peer)){
 							return;
@@ -249,34 +249,34 @@ public class RUBTClient extends Thread{
 						switch(msg[0]){  
 
 							case Message.CHOKE:
-								peer.setChoked(true);
+								peer.set_choked(true);
 								eraser(peer);   
 								break;
 							case Message.UNCHOKE:
-								peer.setChoked(false);
+								peer.set_choked(false);
 								chooseAndRequestPiece(peer);
 								break;			
 							case Message.INTERESTED:
-								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
-								peer.setRemoteInterested(true);
+								System.out.println("Peer " + peer.get_peer_id() + " sent interested");
+								peer.set_remote_interested(true);
 								if (unchokedPeers < unchokeLimit){ 
-									peer.sendMessage(message.getUnchoke());   
-									peer.setChoking(false);
+									peer.send(message.getUnchoke_());   
+									peer.set_choking(false);
 									incrementUnchoked();   
 									}
 								break;
 							case Message.HAVE:  
-								if (peer.isChoked()){
+								if (peer.is_choked()){
 									byte[] piece_bytes = new byte[4];
 									System.arraycopy(msg, 1, piece_bytes, 0, 4);
 									int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		
-									destfile.divC(peer.getBitfield(), piece, true);
+									destfile.divC(peer.get_bitfield(), piece, true);
 									
-									if(destfile.pieceAdd(peer.getBitfield()) != -1 && !peer.getFirstSent()){
-										peer.setInterested(true);
-										peer.setFirstSent(true);
-										peer.sendMessage(message.getInterested());
+									if(destfile.pieceAdd(peer.get_bitfield()) != -1 && !peer.get_sent_first()){
+										peer.set_interested(true);
+										peer.set_sent_first(true);
+										peer.send(message.getInterested_());
 									}
 									else{
 										
@@ -284,34 +284,34 @@ public class RUBTClient extends Thread{
 								}
 								break;
 							case Message.BITFIELD:  
-								if (!peer.getFirstSent()){
-									peer.setFirstSent(true);
+								if (!peer.get_sent_first()){
+									peer.set_sent_first(true);;
 									
 								}else {
-									peer.setConnected(false);
+									peer.set_connected(false);
 									removePeer(peer);
 									return;
 								}
-								if (destfile.pieceAdd(peer.getBitfield()) != -1){ 
-									peer.setInterested(true);
-									peer.sendMessage(message.getInterested());
+								if (destfile.pieceAdd(peer.get_bitfield()) != -1){ 
+									peer.set_interested(true);
+									peer.send(message.getInterested_());
 								}
 								break;
 							case Message.REQUEST:
 								if(!isValidRequest(msg,peer)){  
-									if(!peer.isChoking()){
-									peer.setConnected(false);
+									if(!peer.is_choking()){
+									peer.set_connected(false);
 									System.out.println("REQUEST CLOSING CONNECTION");
 									removePeer(peer);
 									}
 								}
 								break;
 							case Message.PIECE:		
-								if (!peer.isInterested()){ 
-									peer.setConnected(false);
+								if (!peer.is_interested()){ 
+									peer.set_connected(false);
 									removePeer(peer);
 								}else {
-									peer.received_bytes += msg.length;
+									peer.download_bytes += msg.length;
 									getNextBlock(msg,peer);
 								}
 								break;
@@ -332,7 +332,7 @@ public class RUBTClient extends Thread{
 	public void addPeers(List<Peer> newPeers){
 		
 		for (Peer peer: newPeers){
-			peer.initclient(this);
+			
 			peer.start();
 		}
 		
@@ -345,7 +345,7 @@ public class RUBTClient extends Thread{
 	public synchronized boolean alreadyConnected(byte[] peer_id){
 		
 		for (Peer peer: this.peers){
-			if (Arrays.equals(peer.getPeer_id(),peer_id)){
+			if (Arrays.equals(peer.get_peer_id(),peer_id)){
 				return true;
 			}
 		}
@@ -363,15 +363,15 @@ public class RUBTClient extends Thread{
 	   	int offset_counter = 0;
 	   	Message current_message = new Message();
 	   	byte[] request_message;
-		if (!peer.isChoked() && peer.isInterested()){ 
-			current_piece = destfile.pieceAdd(peer.getBitfield());
+		if (!peer.is_choked() && peer.is_interested()){ 
+			current_piece = destfile.pieceAdd(peer.get_bitfield());
 			if (current_piece == -1){
-				peer.setInterested(false);
+				peer.set_interested(false);
 				return;
 			}
 			destfile.progtake(current_piece);  //take the progress piece
-			peer.setLastRequestedPiece(current_piece);
-	 	   	offset_counter = destfile.pieces[current_piece].getOffset();
+			peer.set_req_last(current_piece);
+	 	   	offset_counter = destfile.pieces[current_piece].get_offset();
 			if (offset_counter != -1){
 				offset_counter += max_request;
 			}else {
@@ -380,14 +380,14 @@ public class RUBTClient extends Thread{
 	   		request_message = current_message.request(current_piece, offset_counter, max_request);
 	   		
 	   		System.out.println("requesting piece " + current_piece);
-			peer.sendMessage(request_message);
+			peer.send(request_message);
 	   	}
 	}
 	
 	private synchronized void addChunk(int piece, int offset,byte[] data){
 		byte[] chunk = new byte[data.length-9];
 		System.arraycopy(data, 9, chunk, 0, data.length-9);
-		destfile.pieces[piece].assemble(chunk,offset);
+		destfile.pieces[piece].add_data(chunk,offset);
 	}
 	
 	private void getNextBlock(byte[] block,Peer peer){
@@ -415,7 +415,7 @@ public class RUBTClient extends Thread{
 					Peer[] array = peers.toArray(new Peer[peers.size()]);
 					
 					for(int i = 0; i < array.length; i++){
-						array[i].sendMessage(message.getHaveMessage(piece_bytes));
+						array[i].send(message.doesHave(piece_bytes));
 					}
 					
 					chooseAndRequestPiece(peer);
@@ -426,11 +426,11 @@ public class RUBTClient extends Thread{
 			}else {
 				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
 				request = message.request(piece, offset + max_request, small_request);
-				if (peer.isChoked()){			
+				if (peer.is_choked()){			
 	   				System.out.println("got choked out");
 	   				return;
 	   			}else {
-					peer.sendMessage(request);
+					peer.send(request);
 				}
 			}
 			
@@ -439,7 +439,7 @@ public class RUBTClient extends Thread{
 				this.downloaded += destfile.pieces[piece].data.length;
 				
 				for (Peer all_peer: this.peers){
-					all_peer.sendMessage(message.getHaveMessage(piece_bytes));
+					all_peer.send(message.doesHave(piece_bytes));
 				}
 				chooseAndRequestPiece(peer); 		
 			}
@@ -447,12 +447,12 @@ public class RUBTClient extends Thread{
 				removePeer(peer);
 			}
 		}else {
-			if (peer.isChoked()){			
+			if (peer.is_choked()){			
    				System.out.println("got choked out");
    				return;
    			}else {
 				request = message.request(piece, offset + max_request, max_request);
-				peer.sendMessage(request);
+				peer.send(request);
 			}
 		}
 	}
@@ -482,7 +482,7 @@ public class RUBTClient extends Thread{
 		
 		if(event != null && event.equals("completed")){
 			System.out.println("\n  \n  ***************completed*************  \n \n ");
-			System.out.println("incomplete: " + this.destfile.incomplete);
+			System.out.println("incomplete: " + this.destfile.neededB);
 		}
 		return (new Communicator(response_string));
 	}
@@ -493,9 +493,9 @@ public class RUBTClient extends Thread{
 	          
 	public void removePeer(Peer peer){
 		if (peers.contains(peer)){
-			System.out.println("closing connections for peer " + peer.getPeer_id());
+			System.out.println("closing connections for peer " + peer.get_peer_id());
 			eraser(peer);
-			peer.closeConnections();
+			peer.close();
 			peers.remove(peer);
 		}
 	}
@@ -516,10 +516,10 @@ public class RUBTClient extends Thread{
 			//confirm pieces
 			return false;
 		}
-		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes); 
-		peer.sent_bytes += piece.length;
+		piece = piece_message.getPiece(destfile, index_bytes, length, begin_bytes); 
+		peer.upload_bytes += piece.length;
 		uploaded += piece.length;
-		peer.sendMessage(piece);  
+		peer.send(piece);  
 		return true;
 	}
 	
@@ -550,10 +550,10 @@ public class RUBTClient extends Thread{
 	
 	public void closeAllConnections(){
 		for(Peer peer: this.peers){
-			peer.closeConnections();
+			peer.close();
 		}
 		for(Peer peer: this.blocking_peers){
-			peer.closeConnections();
+			peer.close();
 		}
 		
 		try {
@@ -571,7 +571,7 @@ public class RUBTClient extends Thread{
 	public void quitClientLoop(){
 		endEventLoop();
 		Message quit_message = new Message();
-		PeerMsg quit_task = new PeerMsg(null, quit_message.getQuitMessage());
+		PeerMsg quit_task = new PeerMsg(null, quit_message.quit());
 		addMessageTask(quit_task);
 	}
 	
@@ -632,6 +632,6 @@ public class RUBTClient extends Thread{
 		unchokedPeers--;
 	}	
 	private void eraser(Peer peer){
-		destfile.eraser(peer.getLastRequestedPiece());
+		destfile.eraser((int) peer.get_sent_last());
 	}
 }
