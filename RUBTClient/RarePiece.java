@@ -62,7 +62,7 @@ public class RarePiece {
 		boolean[] bools = checker(bitfield);
 		
 		for(int i = 0; i<counter; i++){
-			if(bitF[val[i].getIdentifier()] == 0 && bools[val[i].getIdentifier()]){
+			if(bitF[val[i].getCount()] == 0 && bools[val[i].getCount()]){
 				outP.progtake(i);
 				return val[i];
 			}
@@ -98,7 +98,7 @@ public class RarePiece {
 		Counter[] val=iterate();
 		Arrays.sort(val);
 		Counter rare = finder(val, bitfield);
-		return rare.getIdentifier();
+		return rare.getCount();
 	}
 
 }
