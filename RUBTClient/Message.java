@@ -91,7 +91,7 @@ public class Message
 		int begin = ByteBuffer.wrap(begin_).getInt();
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(length);
-		block = file.getPieceData(index, begin, length);
+		block = file.downB(index, begin, length);
 		System.arraycopy(buffer.array(), 0, piece_message, 0, 4);
 		piece_message[4]=PIECE;
 		System.arraycopy(index_, 0, piece_message, 5, 4);
