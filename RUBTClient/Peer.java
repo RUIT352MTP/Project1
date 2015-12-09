@@ -135,7 +135,7 @@ public class Peer extends Thread {
 
 		if(!incoming){
 			this.client.blocking_peers.add(this);
-			this.send(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
+			this.send(current_message.handshake_(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
 			handshake = this.handshake();
 			if(handshake == null){
 				return;
@@ -145,7 +145,7 @@ public class Peer extends Thread {
 			}
 			this.client.blocking_peers.remove(this);
 		}
-		client_bitfield = current_message.getBitFieldMessage(this.client.destfile.getMybitfield());
+		client_bitfield = current_message.makeBitfieldMsg(this.client.destfile.getMybitfield());
 
 		this.send(client_bitfield);
 		
