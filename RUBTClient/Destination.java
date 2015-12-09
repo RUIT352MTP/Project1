@@ -98,18 +98,18 @@ public class Destination {
 	}
 	
 	public int verify(Piece piece){
-		return verifyH(piece.getData());
+		return verifyH(piece.get_data());
 	}
 	
 	public synchronized boolean addbit(int pid){
-		if(verifyH(this.pieces[pid].getData())==pid){
+		if(verifyH(this.pieces[pid].get_data())==pid){
 			try {
 				long lng = pid*tinfo().piece_length;
 				save.seek(lng);
-				save.write(this.pieces[pid].getData());
+				save.write(this.pieces[pid].get_data());
 				this.piece[pid]=2;
 				this.bitupdate();
-				this.moreC -= (this.pieces[pid].getData().length);
+				this.moreC -= (this.pieces[pid].get_data().length);
 				
 				if(this.moreC<=0){
 					this.client.contactTracker("completed");
@@ -153,7 +153,7 @@ public class Destination {
 				this.save.read(tt);
 				if(this.verifyH(tt)==i){
 					piece[i]=2;
-					this.moreC-=(this.pieces[i].getData().length);
+					this.moreC-=(this.pieces[i].get_data().length);
 				}else{
 					check2=false;
 					System.out.println("Inavlid piece: " + i);
